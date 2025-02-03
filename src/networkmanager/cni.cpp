@@ -110,6 +110,8 @@ void ParseBridgeConfig(const aos::common::utils::CaseInsensitiveObjectWrapper& p
     auto routes = aos::common::utils::GetArrayValue<Router>(ipam, "routes",
         [](const auto& value) { return RouterFromJson(aos::common::utils::CaseInsensitiveObjectWrapper(value)); });
 
+    LOG_DBG() << "Copying config routes: " << routes.size();
+
     Copy(routes, bridge.mIPAM.mRouters);
 }
 
@@ -124,6 +126,8 @@ void ParseDNSConfig(const aos::common::utils::CaseInsensitiveObjectWrapper& plug
     dns.mCapabilities.mAliases = capabilities.GetOptionalValue<bool>("aliases").value_or(false);
 
     auto remoteServers = aos::common::utils::GetArrayValue<std::string>(plugin, "remoteServers");
+
+    LOG_DBG() << "Copying config remote servers: " << remoteServers.size();
 
     Copy(remoteServers, dns.mRemoteServers);
 }
@@ -141,12 +145,16 @@ void ParseFirewallConfig(const aos::common::utils::CaseInsensitiveObjectWrapper&
               return InputAccessConfigFromJson(aos::common::utils::CaseInsensitiveObjectWrapper(value));
           });
 
+    LOG_DBG() << "Copying config input access: " << inputAccess.size();
+
     Copy(inputAccess, firewall.mInputAccess);
 
     auto outputAccess
         = aos::common::utils::GetArrayValue<OutputAccessConfig>(plugin, "outputAccess", [](const auto& value) {
               return OutputAccessConfigFromJson(aos::common::utils::CaseInsensitiveObjectWrapper(value));
           });
+
+    LOG_DBG() << "Copying config output access: " << outputAccess.size();
 
     Copy(outputAccess, firewall.mOutputAccess);
 }
@@ -319,12 +327,16 @@ Error CNI::GetNetworkListCachedConfig(NetworkConfigList& net, RuntimeConf& rt)
                 };
             });
 
+            LOG_DBG() << "Copying config args: " << args.size();
+
             Copy(args, rt.mArgs);
         }
 
         if (cacheObj.Has("capabilityArgs")) {
             auto capabilityArgs = cacheObj.GetObject("capabilityArgs");
             if (capabilityArgs.Has("aliases")) {
+                LOG_DBG() << "Copying config aliases: ";
+
                 Copy(aos::common::utils::GetArrayValue<std::string>(
                          capabilityArgs.GetObject("aliases"), net.mName.CStr()),
                     rt.mCapabilityArgs.mHost);
@@ -823,20 +835,28 @@ void CNI::ParsePrevResult(const std::string& prevResult, Result& result) const
     const auto interfaces = aos::common::utils::GetArrayValue<Interface>(object, "interfaces",
         [](const auto& value) { return InterfaceFromJson(aos::common::utils::CaseInsensitiveObjectWrapper(value)); });
 
+    LOG_DBG() << "Copying config interfaces: " << interfaces.size();
+
     Copy(interfaces, result.mInterfaces);
 
     const auto ips = aos::common::utils::GetArrayValue<IPs>(object, "ips",
         [](const auto& value) { return IPsFromJson(aos::common::utils::CaseInsensitiveObjectWrapper(value)); });
+
+    LOG_DBG() << "Copying config ips: " << ips.size();
 
     Copy(ips, result.mIPs);
 
     const auto routers = aos::common::utils::GetArrayValue<Router>(object, "routes",
         [](const auto& value) { return RouterFromJson(aos::common::utils::CaseInsensitiveObjectWrapper(value)); });
 
+    LOG_DBG() << "Copying config routers: " << routers.size();
+
     Copy(routers, result.mRoutes);
 
     if (object.Has("dns")) {
         const auto dns = aos::common::utils::GetArrayValue<std::string>(object.GetObject("dns"), "nameservers");
+
+        LOG_DBG() << "Copying config dns: " << dns.size();
 
         Copy(dns, result.mDNSServers);
     }
