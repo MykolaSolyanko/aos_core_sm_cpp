@@ -20,6 +20,8 @@
 
 #include "exec.hpp"
 
+#include "logger/logmodule.hpp"
+
 namespace aos::sm::cni {
 
 /***********************************************************************************************************************
@@ -105,8 +107,12 @@ std::string LaunchPlugin(
                 continue;
             }
 
-            throw std::runtime_error(
-                PluginErr(error, output, "plugin execution failed with exit code " + std::to_string(exitCode)));
+            auto err = PluginErr(error, output, "plugin execution failed with exit code " + std::to_string(exitCode));
+            LOG_DBG() << "Plugin err: " << err.c_str();
+
+            // throw std::runtime_error(
+            //     PluginErr(error, output, "plugin execution failed with exit code " + std::to_string(exitCode)));
+            throw std::runtime_error(err);
         }
 
         return output;

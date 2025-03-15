@@ -476,6 +476,10 @@ std::string CNI::ExecuteDNSPlugin(const NetworkConfigList& net, const RuntimeCon
     auto pluginPath = std::filesystem::path(cBinaryPluginDir) / net.mDNS.mType.CStr();
 
     auto [result, err] = mExec->ExecPlugin(dnsConfig, pluginPath, args);
+    if (!err.IsNone()) {
+        LOG_DBG() << "Plugin was executed with error: " << err;
+    }
+
     AOS_ERROR_CHECK_AND_THROW("failed to execute DNS plugin", err);
 
     return result;
