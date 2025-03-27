@@ -681,6 +681,9 @@ std::string CNI::ExecuteBandwidthPlugin(const NetworkConfigList& net, const std:
     auto pluginPath      = std::string(cBinaryPluginDir) + "/" + net.mBandwidth.mType.CStr();
 
     auto [result, err] = mExec->ExecPlugin(bandwidthConfig, pluginPath, args);
+    if (!err.IsNone()) {
+        LOG_DBG() << "Plugin exec: " << err;
+    }
     AOS_ERROR_CHECK_AND_THROW("failed to execute bandwidth plugin", err);
 
     return result;
